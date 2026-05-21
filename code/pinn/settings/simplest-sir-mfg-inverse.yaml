@@ -1,0 +1,70 @@
+ARGS:
+  epochs: 300000
+  batch_size: -1
+  patience: 4000
+
+MODEL:
+  f_hid: 25
+  depth: 8
+  in_lb: '[-1.]'
+  in_ub: '[1.]'
+  act: tanh
+  seed: 42
+  lr: 0.005
+  beta: 0.1
+  dyn_norm: 'dyn_norm' #
+  
+NS:
+  nx: [100]
+
+IN_VAR_NAMES:
+ [t]
+
+OUT_VAR_NAMES:
+ [S, I, uS, uI]
+
+CUSTOM_CONSTS:
+  cost_inf: 4.
+  gamma: 2.
+  S_0: 0.7
+  w: 0.1
+
+VARIABLES:
+  [beta_max]
+
+CUSTOM_FUNCS:
+  #exact: t*0
+  beta: 1 /(1.+tf.exp(-alpha(vars_,u_)))
+  c: tf.math.abs( beta_max *( uS - uI -  w ) * tf.stop_gradient( I ) / 2. ) + 1e-13
+  c_sign: tf.math.sign(( uS - uI - w ))
+  approximation: -6.63320111e-01 + tf.math.sqrt(c(vars_,u_)) *8.92654544e-01 - c(vars_,u_) * 6.99385982e-02 + c(vars_,u_)**2* 2.97831057e-04 - c(vars_,u_)**3 * 1.08549568e-06 + c(vars_,u_)**4*1.68015701e-09 +tf.math.exp(-c(vars_,u_))*  3.66041065e-02 + tf.math.exp(-2*c(vars_,u_))*  4.74148560e-01
+  # this is an approximation of inverse function for f(x)=x(2+e^x+e^(-x))
+  alpha: c_sign(vars_,u_) * approximation(vars_,u_)
+  
+CONDS:
+  pde:
+    eq_string: '  (d/dt) S  = - beta(vars,u_) * beta_max * S * tf.stop_gradient( I ),
+                  (d/dt) I  = beta(vars,u_) * beta_max * S * tf.stop_gradient( I ) - gamma * I ,
+                - (d/dt) uS = - beta(vars,u_) * beta_max * tf.stop_gradient( I ) * ( uS - uI - w) + alpha(vars,u_)**2,
+                - (d/dt) uI = - gamma * uI + cost_inf'
+    relative_area: True
+    point_area: '[[0, 1]]'
+    N: 250 #5000
+   #
+  initial:
+     eq_string: S = S_0 , I = 1 - S_0
+     relative_area: True
+     point_area: '[[0, 0]]'
+     N: 1
+
+  terminal:
+     eq_string: uS = 0 , uI = 0
+     relative_area: True
+     point_area: '[[1, 1]]'
+     N: 1
+
+  data:
+     raw_data_condition: True
+     eq_string: I *10
+     weight: 10
+     filename: colloc_solution_I.pkl
