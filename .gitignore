@@ -1,0 +1,6 @@
+
+/code/pinn/raw_data/*
+/code/pinn/results/*
+/code/collocation/*.csv
+\code\collocation\logs*
+*.csv

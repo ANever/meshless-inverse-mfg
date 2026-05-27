@@ -164,6 +164,8 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             
             
             out_string = str(noise_lvl) + ',' + str(num_data_points)
+            if np.isnan(rel_errors[0]):
+                sol.cells_coefs = np.zeros((sol.cell_coefs.shape))
             for er in rel_errors:
                 out_string += ',' + str(er)
             out_string +='\n'
@@ -188,8 +190,6 @@ n = 20
 ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
 points = [[t] for t in ts]
 vals = [[sol.eval(np.array([t]), [0], 1)] for t in ts]
-
-
 
 means = np.mean(final_results, axis=2)
 stds = np.std(final_results, axis=2)
