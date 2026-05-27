@@ -35,7 +35,8 @@ def eval_error_rel(sol, sol_mes, A,b):
     for func in range(4):
         for t in ts:
             inc = (sol.eval([t],[0],func) - sol_mes.eval([t],[0],func))/(np.abs(sol_mes.eval([t],[0],func)) + 1e-10)
-            er[func] += abs(float(inc))#**2
+            er[func] += abs(float(inc))**2
+        er[func] = np.sqrt(er[func])
         er[4] = abs(sol.eval([0.2],[0],func=4)-20)/20
         
     true_resudual = np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
@@ -144,20 +145,35 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 raw_res = pack_coefs(sol)
                 sol.cells_coefs = (1-speed)*prev_coefs + speed*sol.cells_coefs
                 
-                errors = eval_error(sol, sol_mes, A, b)
-                all_errors[j] = errors
-                
-                rel_errors = eval_error_rel(sol, sol_mes, A, b)
-                all_rel_errors[j] = rel_errors
                 
                 coef_change = np.max(np.abs(prev_coefs - sol.cells_coefs))
                 #print(j,' | ', coef_change ,' | ', errors)
+                
                 if coef_change<1e-5 or np.isnan(coef_change):
-                    print('converged')
+                    print('converged')                    
                     break
                 saved_coefs = sol.cells_coefs
+            
+            errors = eval_error(sol, sol_mes, A, b)
+            all_errors[j] = errors
+            
+            rel_errors = eval_error_rel(sol, sol_mes, A, b)
+            all_rel_errors[j] = rel_errors
+            
             final_errors[i_data,i_noise,sample_i] = errors[4]
+            
+            
+            out_string = str(noise_lvl) + ',' + str(num_data_points)
+            for er in rel_errors:
+                out_string += ',' + str(er)
+            out_string +='\n'
+            with open('result.csv', 'a') as f:
+                f.write(out_string)
+
         col_names = ['err_S', 'err_I', 'err_uS','err_uI', 'beta', 'residual', 'residual_S', 'residual_I', 'residual_uS', 'residual_uI',] #'residual_initial', 'residual_terminal']
+                
+                
+        
         logs = pd.DataFrame(all_errors, columns=col_names)
         logs = logs.dropna()
         logs['index']=logs.index
