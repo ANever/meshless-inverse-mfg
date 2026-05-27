@@ -41,7 +41,7 @@ if __name__ == "__main__":
     out_file = "results.csv"
     sp.config_gpu(flag=0, verbose=True)
     filename = "./settings/"+problem_name+".yaml"
-    for i in 50*np.array([2**i for i in range(10)]):
+    for i in 50*np.array([2**i for i in range(1,10)]):
         #noiseless_filename = 'raw_data/colloc_solution_I_'+str(i)+'.pkl'
         #with open(noiseless_filename, mode="rb") as datafile:
         #    data = pkl.load(datafile)
@@ -55,10 +55,10 @@ if __name__ == "__main__":
         for j in range(n):
             with open(filename, mode="r") as file:
                     settings = yaml.safe_load(file)
-            for long_iteration in range(20):
+            for long_iteration in range(5):
                 model = sp.from_settings(settings, 
                                 model_class=sp.PINN_WAVE)
-                for iteration in range(5):
+                for iteration in range(3):
                     with open(filename, mode="r") as file:
                         settings = yaml.safe_load(file)
                     data_filename = 'raw_data/colloc_solution_I_'+str(i)+'_'+str(j)+'.pkl'
