@@ -96,15 +96,15 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0., 0.01, 0.05, 0.10, 0.20]
+noise_lvl_set = [0.01, 0.05, 0.10]#, 0.20]
 nn_points = 4
-num_data_points_set = 50*2**np.array(range(6))
+num_data_points_set = 50*2**np.array(range(2, 9))
 n_samples = 100
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
 for i_data, num_data_points in enumerate(num_data_points_set):
     for i_noise, noise_lvl in enumerate(noise_lvl_set):
-        print(i_data, i_noise)
+        print(num_data_points, noise_lvl)
         for sample_i in range(n_samples):
             settings_filename = "settings/simplest_mfg.yaml"
             settings, sol_mes, iteration_dict = from_file(settings_filename)
@@ -129,7 +129,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             n = 20
             ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
                 
-            num_of_iterations = 100
+            num_of_iterations = 50
             true_resudual = np.empty(num_of_iterations)*np.nan
             all_errors = np.empty((num_of_iterations,5+1+4))*np.nan
             all_rel_errors = np.empty((num_of_iterations,5+1+4))*np.nan
@@ -150,7 +150,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 #print(j,' | ', coef_change ,' | ', errors)
                 
                 if coef_change<1e-5 or np.isnan(coef_change):
-                    print('converged')                    
+                    print(sample_i, ' converged')                    
                     break
                 saved_coefs = sol.cells_coefs
             
@@ -165,7 +165,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             
             out_string = str(noise_lvl) + ',' + str(num_data_points)
             if np.isnan(rel_errors[0]):
-                sol.cells_coefs = np.zeros((sol.cell_coefs.shape))
+                sol.cells_coefs = np.zeros((sol.cells_coefs.shape))
             for er in rel_errors:
                 out_string += ',' + str(er)
             out_string +='\n'
