@@ -96,9 +96,9 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0.01, 0.05, 0.10]#, 0.20]
+noise_lvl_set = [0.05, 0.10]#, 0.20]
 nn_points = 4
-num_data_points_set = 50*2**np.array(range(2, 9))
+num_data_points_set = 50*2**np.array(range(4, 9))
 n_samples = 100
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
@@ -128,7 +128,6 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 sol.cells_coefs = saved_coefs
             n = 20
             ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
-                
             num_of_iterations = 50
             true_resudual = np.empty(num_of_iterations)*np.nan
             all_errors = np.empty((num_of_iterations,5+1+4))*np.nan
@@ -138,10 +137,10 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 A, b = sol.global_solve(
                     solver="np",
                     #svd_threshold=1e-8,
-                    alpha=0, #1e-7,
+                    alpha=1e-7,
                     **iteration_dict,
                 )
-                speed = 1
+                speed = 0.3
                 raw_res = pack_coefs(sol)
                 sol.cells_coefs = (1-speed)*prev_coefs + speed*sol.cells_coefs
                 
@@ -164,8 +163,9 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             
             
             out_string = str(noise_lvl) + ',' + str(num_data_points)
-            if np.isnan(rel_errors[0]):
+            if np.any(np.isnan(sol.cells_coefs  )):
                 sol.cells_coefs = np.zeros((sol.cells_coefs.shape))
+                print('failed')
             for er in rel_errors:
                 out_string += ',' + str(er)
             out_string +='\n'
