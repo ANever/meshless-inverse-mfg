@@ -66,7 +66,7 @@ CONDITIONS:
     #data:
     data:
       left:
-        - '2 * I '
+        - '10* I '
       right: 
-        - '2* I_info(x)' #decklared in code
+        - '10* I_info(x)' #decklared in code
       type: data

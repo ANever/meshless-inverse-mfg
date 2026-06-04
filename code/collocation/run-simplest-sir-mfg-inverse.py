@@ -37,7 +37,7 @@ def eval_error_rel(sol, sol_mes, A,b):
             inc = (sol.eval([t],[0],func) - sol_mes.eval([t],[0],func))/(np.abs(sol_mes.eval([t],[0],func)) + 1e-10)
             er[func] += abs(float(inc))**2
         er[func] = np.sqrt(er[func])
-        er[4] = abs(sol.eval([0.2],[0],func=4)-20)/20
+        er[4] = abs(sol.eval([0.99],[0],func=4)-20)/20
         
     true_resudual = np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
     er[5] = true_resudual
@@ -96,10 +96,11 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0.05, 0.10]#, 0.20]
-nn_points = 4
-num_data_points_set = 50*2**np.array(range(4, 9))
-n_samples = 100
+noise_lvl_set = [0.01, 0.05, 0.10]#, 0.20]
+#nn_points = 4
+num_data_points_set = 50*2**np.array(range(1, 9))
+nn_points = len(num_data_points_set)
+n_samples = 1
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
 for i_data, num_data_points in enumerate(num_data_points_set):
@@ -124,7 +125,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             settings, iteration_dict = prepare_settings(settings)
             sol = Solution(**eval_dict(settings['MODEL'], {'np':np}))
             sol.cells_coefs *= 0.0
-            if sample_i > 0:
+            if sample_i > 0 and sample_i%5!=0:
                 sol.cells_coefs = saved_coefs
             n = 20
             ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
@@ -137,10 +138,10 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 A, b = sol.global_solve(
                     solver="np",
                     #svd_threshold=1e-8,
-                    alpha=1e-7,
+                    alpha=1e-10,
                     **iteration_dict,
                 )
-                speed = 0.3
+                speed = 0.6
                 raw_res = pack_coefs(sol)
                 sol.cells_coefs = (1-speed)*prev_coefs + speed*sol.cells_coefs
                 
@@ -158,6 +159,8 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             
             rel_errors = eval_error_rel(sol, sol_mes, A, b)
             all_rel_errors[j] = rel_errors
+            
+            print(rel_errors[4])
             
             final_errors[i_data,i_noise,sample_i] = errors[4]
             

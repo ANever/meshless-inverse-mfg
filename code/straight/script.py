@@ -48,7 +48,7 @@ for n_i, n in enumerate(number_of_steps):
                 I[i] = sol_mes.eval(point,[0],func=1) 
                 dIdt[i] = sol_mes.eval(point,[1],func=1) 
             
-            for i in range(n-1):
+            for i in range(n):#(n-1):
                 I[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
                 dIdt[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
             
