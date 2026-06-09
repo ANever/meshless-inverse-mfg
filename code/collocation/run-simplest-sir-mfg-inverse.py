@@ -96,11 +96,11 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0.01, 0.05, 0.10]#, 0.20]
+noise_lvl_set = [0.01, 0.05, 0.10, 0.20]
 #nn_points = 4
 num_data_points_set = 50*2**np.array(range(1, 9))
 nn_points = len(num_data_points_set)
-n_samples = 1
+n_samples = 100
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
 for i_data, num_data_points in enumerate(num_data_points_set):
@@ -125,6 +125,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             settings, iteration_dict = prepare_settings(settings)
             sol = Solution(**eval_dict(settings['MODEL'], {'np':np}))
             sol.cells_coefs *= 0.0
+            sol.cells_coefs += 0.2
             if sample_i > 0 and sample_i%5!=0:
                 sol.cells_coefs = saved_coefs
             n = 20
@@ -141,6 +142,9 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                     alpha=1e-10,
                     **iteration_dict,
                 )
+                
+                #print(np.linalg.cond(A))
+                
                 speed = 0.6
                 raw_res = pack_coefs(sol)
                 sol.cells_coefs = (1-speed)*prev_coefs + speed*sol.cells_coefs
