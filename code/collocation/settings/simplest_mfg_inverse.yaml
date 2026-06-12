@@ -1,7 +1,7 @@
 MODEL:    
   dim_sizes: np.array([30])
   area_lims: np.array([[-1., 1.]])
-  power: 5
+  power: 4
 
 WEIGHTS:
     border_weight: 200
@@ -66,7 +66,7 @@ CONDITIONS:
     #data:
     data:
       left:
-        - '10* I '
+        - '2* I '
       right: 
-        - '10* I_info(x)' #decklared in code
+        - '2* I_info(x)' #declared in code
       type: data

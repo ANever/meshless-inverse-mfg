@@ -32,7 +32,7 @@
       xlabel= Number of measurements,
     ]
     
-    \def\file{data-errors-colloc/rel_means.csv}
+    \def\file{data-errors-colloc/rel_stds.csv}
     
     \addplot+                  table [x=x, y=0, col sep=comma] {\file};
     \addplot+ [color=black!90] table [x=x, y=0.01, col sep=comma] {\file};
@@ -48,5 +48,5 @@
     
     
   \end{axis}
-\end{tikzpicture}\\ %\pgfplotslegendfromname{named}
+\end{tikzpicture}\\%\pgfplotslegendfromname{named}
     \end{document}

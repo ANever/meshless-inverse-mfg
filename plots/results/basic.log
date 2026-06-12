@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.1) (preloaded format=pdflatex 2026.2.3)  4 JUN 2026 17:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.1) (preloaded format=pdflatex 2026.2.3)  12 JUN 2026 12:18
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -725,31 +725,64 @@ Missing character: There is no 0 in font nullfont!
 Missing character: There is no 1 in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no t in font nullfont!
-PGFPlots: reading {data-errors-colloc/rel_means.csv}
+PGFPlots: reading {data-errors-colloc/rel_stds.csv}
+
+Package pgfplots Warning: Table 'data-errors-colloc/rel_stds.csv' has an empty 
+column name; replacing it by '0'' on input line 37.
+
+ [warning /pgfplots/warning/empty column name]
+NOTE: coordinate (50,0) has been dropped because it is unbounded (in y). (see a
+lso unbounded coords=jump). 
 Missing character: There is no . in font nullfont!
 Missing character: There is no 0 in font nullfont!
 Missing character: There is no 1 in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no t in font nullfont!
-PGFPlots: reading {data-errors-colloc/rel_means.csv}
+PGFPlots: reading {data-errors-colloc/rel_stds.csv}
+
+Package pgfplots Warning: Table 'data-errors-colloc/rel_stds.csv' has an empty 
+column name; replacing it by '0'' on input line 38.
+
+ [warning /pgfplots/warning/empty column name]
 Missing character: There is no . in font nullfont!
 Missing character: There is no 0 in font nullfont!
 Missing character: There is no 1 in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no t in font nullfont!
-PGFPlots: reading {data-errors-colloc/rel_means.csv}
+PGFPlots: reading {data-errors-colloc/rel_stds.csv}
+
+Package pgfplots Warning: Table 'data-errors-colloc/rel_stds.csv' has an empty 
+column name; replacing it by '0'' on input line 39.
+
+ [warning /pgfplots/warning/empty column name]
+NOTE: coordinate (50,) has been dropped because of a coordinate filter. (see al
+so unbounded coords=jump). 
 Missing character: There is no . in font nullfont!
 Missing character: There is no 0 in font nullfont!
 Missing character: There is no 1 in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no t in font nullfont!
-PGFPlots: reading {data-errors-colloc/rel_means.csv}
+PGFPlots: reading {data-errors-colloc/rel_stds.csv}
+
+Package pgfplots Warning: Table 'data-errors-colloc/rel_stds.csv' has an empty 
+column name; replacing it by '0'' on input line 40.
+
+ [warning /pgfplots/warning/empty column name]
+NOTE: coordinate (50,) has been dropped because of a coordinate filter. (see al
+so unbounded coords=jump). 
 Missing character: There is no . in font nullfont!
 Missing character: There is no 0 in font nullfont!
 Missing character: There is no 1 in font nullfont!
 Missing character: There is no p in font nullfont!
 Missing character: There is no t in font nullfont!
-PGFPlots: reading {data-errors-colloc/rel_means.csv}
+PGFPlots: reading {data-errors-colloc/rel_stds.csv}
+
+Package pgfplots Warning: Table 'data-errors-colloc/rel_stds.csv' has an empty 
+column name; replacing it by '0'' on input line 41.
+
+ [warning /pgfplots/warning/empty column name]
+NOTE: coordinate (50,) has been dropped because of a coordinate filter. (see al
+so unbounded coords=jump). 
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
 Missing character: There is no ; in font nullfont!
@@ -759,7 +792,7 @@ Missing character: There is no ; in font nullfont!
 
 
 Non-PDF special ignored!
-<special> papersize=316.30293pt,216.34328pt
+<special> papersize=316.31049pt,216.34161pt
 {C:/Users/neverov/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 (C:\Users\neverov\Documents\GitHub\meshless-inverse-mfg\plots\results\basic.aux
 )
@@ -769,10 +802,10 @@ L3 programming layer <2026-01-19>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 24593 strings out of 467866
- 652824 string characters out of 5417358
- 1159948 words of memory out of 5000000
- 53075 multiletter control sequences out of 15000+600000
+ 24590 strings out of 467866
+ 652721 string characters out of 5417358
+ 1156449 words of memory out of 5000000
+ 53072 multiletter control sequences out of 15000+600000
  628175 words of font info for 42 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  99i,20n,118p,739b,2346s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -782,7 +815,7 @@ m/cmmi10.pfb><C:/Users/neverov/AppData/Local/Programs/MiKTeX/fonts/type1/public
 pe1/public/amsfonts/cm/cmr7.pfb><C:/Users/neverov/AppData/Local/Programs/MiKTeX
 /fonts/type1/public/amsfonts/cm/cmsy7.pfb>
 Output written on C:\Users\neverov\Documents\GitHub\meshless-inverse-mfg\plots\
-results\basic.pdf (1 page, 47321 bytes).
+results\basic.pdf (1 page, 46732 bytes).
 PDF statistics:
  29 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)

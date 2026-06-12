@@ -10,6 +10,8 @@ import yaml
 import pickle as pkl
 from random import gauss as random
 
+import matplotlib.pyplot as plt
+
 def eval_error(sol, sol_mes, A,b):
     er = [0]*10
     for func in range(4):
@@ -37,7 +39,7 @@ def eval_error_rel(sol, sol_mes, A,b):
             inc = (sol.eval([t],[0],func) - sol_mes.eval([t],[0],func))/(np.abs(sol_mes.eval([t],[0],func)) + 1e-10)
             er[func] += abs(float(inc))**2
         er[func] = np.sqrt(er[func])
-        er[4] = abs(sol.eval([0.99],[0],func=4)-20)/20
+        er[4] = abs((sol.eval([0.1],[0],func=4) + sol.eval([0.5],[0],func=4) + sol.eval([0.99],[0],func=4))/3-20)/20
         
     true_resudual = np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
     er[5] = true_resudual
@@ -100,7 +102,7 @@ noise_lvl_set = [0.01, 0.05, 0.10, 0.20]
 #nn_points = 4
 num_data_points_set = 50*2**np.array(range(1, 9))
 nn_points = len(num_data_points_set)
-n_samples = 100
+n_samples = 15
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
 for i_data, num_data_points in enumerate(num_data_points_set):
@@ -117,16 +119,19 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             with open(settings_filename, mode="r") as file:
                 settings = yaml.safe_load(file)
             
-            fixed_noize = random(num_data_points)
-            settings['CUSTOMS']['I_info'] = lambda x : (1+fixed_noize*noise_lvl)*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True)
+            fixed_noize = np.random.normal(0,noise_lvl,num_data_points)
             settings['CONDITIONS']['data']['points'] = np.array(np.linspace(-1,1,num_data_points).reshape(-1,1))#utils.f_collocation_points(settings['MODEL']['power']+1)
 
+            data = [(1+fixed_noize[int((x[0]-1e-10)*num_data_points)])*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True) for x in settings['CONDITIONS']['data']['points']]
+            #print(data)
+            settings['CUSTOMS']['I_info'] = lambda x : data[int((x[0] + 1)/2*num_data_points)] #(1+fixed_noize[int(x[0]*num_data_points)]*noise_lvl)*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True)
+            
             temp_settings = cp(settings)
             settings, iteration_dict = prepare_settings(settings)
             sol = Solution(**eval_dict(settings['MODEL'], {'np':np}))
             sol.cells_coefs *= 0.0
             sol.cells_coefs += 0.2
-            if sample_i > 0 and sample_i%5!=0:
+            if sample_i > 0: #and sample_i%5!=0:
                 sol.cells_coefs = saved_coefs
             n = 20
             ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
@@ -139,22 +144,20 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 A, b = sol.global_solve(
                     solver="np",
                     #svd_threshold=1e-8,
-                    alpha=1e-10,
+                    alpha=1e-13,
                     **iteration_dict,
                 )
-                
                 #print(np.linalg.cond(A))
                 
-                speed = 0.6
+                speed = 0.8
                 raw_res = pack_coefs(sol)
                 sol.cells_coefs = (1-speed)*prev_coefs + speed*sol.cells_coefs
                 
-                
                 coef_change = np.max(np.abs(prev_coefs - sol.cells_coefs))
-                #print(j,' | ', coef_change ,' | ', errors)
+                print(j,' | ', coef_change ,' | ')
                 
-                if coef_change<1e-5 or np.isnan(coef_change):
-                    print(sample_i, ' converged')                    
+                if coef_change<1e-6 or np.isnan(coef_change):
+                    #print(sample_i, ' converged')                    
                     break
                 saved_coefs = sol.cells_coefs
             

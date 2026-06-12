@@ -82,10 +82,12 @@ for data_filename_prefix in  ['-straight/', '-straight-last/', '-pinn/', '-collo
             doc.write(r'''\\ ''')
             make_ending(doc)
         subprocess.run(r"pdflatex --output-directory=results tex/"+ tex_filename, shell=True)
-        subprocess.run(r"rename results\\basic.pdf errors" + data_filename[-8:-3] +"pdf", shell=True)
+        res_name = data_filename_prefix[:-1]+data_filename[-9:-3]
+        subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
+        subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
+        
 
-
-    data_filename = 'rel_means.csv'
+    data_filename = 'rel_stds.csv'
 
     data_filename = data_filename_prefix + data_filename
     if __name__ == "__main__":
@@ -93,8 +95,10 @@ for data_filename_prefix in  ['-straight/', '-straight-last/', '-pinn/', '-collo
         with open('tex/' + tex_filename, 'w') as doc:
             make_header(doc)
             make_single_plot(doc, data_filename, ylabel='')
-            doc.write(r'''\\ ''')
+            doc.write(r'\\')
             make_ending(doc)
         subprocess.run(r"pdflatex --output-directory=results tex/"+ tex_filename, shell=True)
         res_name = data_filename_prefix[:-1]+data_filename[-9:-3]
+        
+        subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
         subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
