@@ -100,7 +100,7 @@ def eval_residuals(sol,raw_res, name, i):
 
 noise_lvl_set = [0.01, 0.05, 0.10, 0.20]
 #nn_points = 4
-num_data_points_set = 50*2**np.array(range(1, 9))
+num_data_points_set = 50*2**np.array(range(0, 9))
 nn_points = len(num_data_points_set)
 n_samples = 15
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
@@ -185,7 +185,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
         col_names = ['err_S', 'err_I', 'err_uS','err_uI', 'beta', 'residual', 'residual_S', 'residual_I', 'residual_uS', 'residual_uI',] #'residual_initial', 'residual_terminal']
                 
                 
-        
+        '''
         logs = pd.DataFrame(all_errors, columns=col_names)
         logs = logs.dropna()
         logs['index']=logs.index
@@ -195,7 +195,9 @@ for i_data, num_data_points in enumerate(num_data_points_set):
         logs = logs.dropna()
         logs['index']=logs.index
         logs.to_csv('logs'+str(i_noise) + '_' + str(i_data) + '_rel.csv', sep=',', float_format='%.3e')
-
+        '''
+        
+'''
 n = 20
 ts = np.linspace(settings['MODEL']["area_lims"][0, 0], settings['MODEL']["area_lims"][0, 1] - 1e-9, n)
 points = [[t] for t in ts]
@@ -231,3 +233,4 @@ a = pd.DataFrame(stds)
 a.columns = noise_levels
 a['steps'] = number_of_steps
 a.to_csv('rel_stds.csv')
+'''
