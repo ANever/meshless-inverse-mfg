@@ -1,7 +1,7 @@
 MODEL:    
-  dim_sizes: np.array([30])
+  dim_sizes: np.array([50])
   area_lims: np.array([[-1., 1.]])
-  power: 5
+  power: 6
 
 WEIGHTS:
     border_weight: 200

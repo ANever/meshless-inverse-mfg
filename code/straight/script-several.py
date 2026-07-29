@@ -19,9 +19,9 @@ sol_mes.cells_coefs = coefs['coefs']
 noise_levels = [0, 0.01, 0.05, 0.1, 0.2]
 
 T = 2
-w = 0.1
+#w = 0.1
 gamma = 2
-c = 4
+#c = 4
 S0 = 0.7
 I0 = 1-S0
 
@@ -29,31 +29,43 @@ n_samples = 100
 nn_steps = 10
 experiments_results = np.zeros((nn_steps, len(noise_levels), n_samples))
 
+
+#initial guess
+beta_max = 20
+w = 0.1
+c = 4
+
 #run the algorithm
 number_of_steps = [50*2**i for i in range(4,nn_steps)]
+
+initial_flag = True
 for n_i, n in enumerate(number_of_steps):    
     S = np.zeros(n)
     I = np.zeros(n)
     dIdt = np.zeros(n)
     pS = np.zeros(n)
     pI = np.zeros(n)
-    
+    integral_deriv = np.zeros(n)
+    integral = np.zeros(n)
     h = T/n
     
     print(n, '--------')
     for noise_i, noise in enumerate(noise_levels):
         print(noise)
         for sample_i in range(n_samples):
-            for i in range(n):
-                point = np.array([i*h - 1])
-                pI[i] = (1-np.exp(gamma*(i*h-T)))*c/gamma
-                I[i] = sol_mes.eval(point,[0],func=1) 
-                dIdt[i] = sol_mes.eval(point,[1],func=1) 
+            
+            integral[-1] = 0
+            integral_deriv[-1] = 0
             
             intI = np.zeros(n)
             
-            for i in range(n):#(n-1):
+            
+            for i in range(n):
+                point = np.array([i*h - 1])
+                #pI[i] = (1-np.exp(gamma*(i*h-T)))*c/gamma
+                I[i] = sol_mes.eval(point,[0],func=1) 
                 I[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
+                dIdt[i] = sol_mes.eval(point,[1],func=1) 
                 dIdt[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
                 intI[i] = intI[i-1] + I[i]*h
             
@@ -61,26 +73,56 @@ for n_i, n in enumerate(number_of_steps):
             #S = np.max([S0 - I + I0 - gamma * intI, np.zeros(n)+1e-5], axis=0)
             S = S0 - I + I0 - gamma * intI
             
-
             beta = (dIdt/I + gamma)/S
             
-            def new_u(u):
-                #INT = np.zeros(n)
-                #f = 2*u*(1+np.exp(-u)) - u**2
-                #for i in range(1,n):
-                #    INT[-i-1] = INT[-i] + h * f[-i]
-                #return beta * I / 2 / (1+np.exp(-u)) * (INT - pI - w)
-                return beta[-1] * I[-1] / 2 / (1+np.exp(-u)) * ( - w)
+            if initial_flag:
+                beta_max = 2*np.max(beta)
+                initial_flag = False
             
-            u = 0
-            change = 0.9
-            for i in range(int(1e6)):
-                _u = new_u(u)
-                if (np.max(np.abs(_u - u)) < 1e-15):
-                    break
-                u = u*(1-change) + _u*(change)
-
-            beta_max = beta[-1] * (1+np.exp(u))
+            subfunc_deriv = (2*(beta_max)/(beta_max-beta) - 2*np.log(beta_max/beta - 1))
+            u = np.log(beta_max/beta - 1)
+            subfunc = 2*u*(1+np.exp(-u)) - u**2
+            
+            for i in range(n-1):
+                integral_deriv[-2-i] = integral_deriv[-1-i] + subfunc_deriv[i]*h
+                integral[-2-i] = integral[-1-i] + subfunc[i]*h
+            
+            
+            #plt.plot(beta_max-beta)
+            #plt.show()
+            
+            points_for_grads = [int(n/4),int(n/2), n-1]
+            npfg = len(points_for_grads)
+            grad = np.zeros((npfg,npfg))
+            f = np.zeros(npfg)
+            
+            
+            
+            def f_for_grads(i,params):
+                beta_max, c, w = params
+                t = h*i
+                u = np.log(beta_max/beta - 1)
+                return c/gamma*(1-np.exp(gamma*(i*h-T))) + w - integral[i] + (2*u*(1+np.exp(-u))/beta/I)[i]
+            
+            
+            for i in range(100):
+                params = np.array([beta_max, c, w])
+                    
+                for i_i, i in enumerate(points_for_grads):
+                    grad_beta = (2*(beta_max)/(beta_max-beta) /beta/I - integral_deriv)[i]
+                    grad_c = (1-np.exp(gamma*(i*h-T)))/gamma
+                    grad_w = 1
+                    grad[i_i] = np.array([grad_beta, grad_c, grad_w])
+                
+                    f[i_i] = f_for_grads(i, params)
+                    
+                eps = 0.001
+                params = params - eps*np.linalg.inv(grad)@f
+                print('GRAD ', np.linalg.inv(grad)@f)
+                print('VAL  ', params)
+                beta_max, c, w = params
+                
+                
             experiments_results[n_i, noise_i, sample_i] = abs(beta_max - 20)#[-1]
         #plt.plot((S - np.roll(S,1))[1:]/h)
         #plt.show()
