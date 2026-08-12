@@ -116,12 +116,12 @@ for n_i, n in enumerate(number_of_steps):
             
             
             for i in range(100):
-                params = np.array([beta_max, c, w])
+                params = np.array([beta_max])
                 ps = integral
                 dps_dbeta = integral_deriv
                 
                 def f_complete(params):
-                    beta_max, c, w = params
+                    beta_max = params[0]
                     t = h*i
                     u = np.log(beta_max/beta - 1)
                     #return c/gamma*(1-np.exp(gamma*(i*h-T))) + w - integral[i] + (2*u*(1+np.exp(-u))/beta/I)[i]
@@ -132,25 +132,23 @@ for n_i, n in enumerate(number_of_steps):
                     
                 for i_i, i in enumerate(points_for_grads):
                     grad_beta = (2/(beta- beta_max) + (beta**2*I*(c + c*np.exp(gamma*(i*h - T)) + gamma*w))/(beta_max**2*gamma) + (beta*I*(-beta*ps + (beta- beta_max)*beta_max*dps_dbeta))/beta_max**2)
-                    grad_c = ((beta*np.exp(u)*(1 + np.exp(gamma*(i*h - T)))*I)/((1 + np.exp(u)) * gamma))
-                    grad_w = ((beta*np.exp(u)*I)/(1 + np.exp(u)))
+                    #grad_c = ((beta*np.exp(u)*(1 + np.exp(gamma*(i*h - T)))*I)/((1 + np.exp(u)) * gamma))
+                    #grad_w = ((beta*np.exp(u)*I)/(1 + np.exp(u)))
                     #grad[i_i] = np.array([grad_beta[i], grad_c[i], grad_w[i]])
-                    grad = np.array([grad_beta, grad_c, grad_w])
-                    
+                    grad = np.array([grad_beta])#, grad_w])
                     #plt.plot(grad_c)
                     #plt.show()
                     #f[i_i] = f_for_grads(i, params)
                     f = f_complete(params)
                     
-                eps = 0.01
+                eps = 0.001
                 #params = params - eps*np.linalg.inv(grad)@f
-                print(grad.shape, f.shape)
-                params = params - eps*grad@f/n#np.sum(grad*f, axis=1)/n
+                params = params - eps*grad@f/n # np.sum(grad*f, axis=1)/n
                 #print('GRAD ', np.linalg.inv(grad)@f)
                 print('GRAD ', np.sum(grad, axis=1)/n)
                 print('VAL  ', params)
                 print(f[:4])
-                beta_max, c, w = params
+                beta_max = params[0]
                 
                 
             experiments_results[n_i, noise_i, sample_i] = abs(beta_max - 20)#[-1]

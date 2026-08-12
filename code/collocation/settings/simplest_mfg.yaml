@@ -1,12 +1,12 @@
 MODEL:    
-  dim_sizes: np.array([50])
+  dim_sizes: np.array([40])
   area_lims: np.array([[-1., 1.]])
-  power: 6
+  power: 5
 
 WEIGHTS:
     border_weight: 200
     colloc_weight: 1.5
-    connect_weights: np.array([15, 6])
+    connect_weights: np.array([10, 5])
 
 NS:
   nx: [100, 100]
@@ -23,8 +23,11 @@ CUSTOMS:
     gamma: 2
     S0: 0.7
     w: 0.1
-    c: 'lambda u_: np.abs( beta_max *( uS - uI - w ) * I / 2.)'
-    approximation: 'lambda u_: -6.63320111e-01 + np.sqrt(c(u_)) *8.92654544e-01 - c(u_) * 6.99385982e-02 + c(u_)**2* 2.97831057e-04 - c(u_)**3 * 1.08549568e-06 + c(u_)**4*1.68015701e-09 +np.exp(-c(u_))*  3.66041065e-02 + np.exp(-2*c(u_))*  4.74148560e-01'
+    c: 'lambda u_: (np.abs( beta_max *( uS - uI - w ) * I / 2.))'
+    #approximation for inverse function of u*(1+exp(u))*(1+exp(-u))
+    approximation: 'lambda u_: bisect(lambda x: (x*(1+np.exp(x))*(1+np.exp(-x)) - c(u_)), 0, 40)
+    
+    #u_:-2297.36352851433+23884.674971297107*np.sqrt(c(u_))-34163.4601977002*c(u_)+14820.660457620688*c(u_)**2-3667.377703202437*c(u_)**3+423.91363785127453*c(u_)**4-18.863552127372177*c(u_)**5+14.581079931215502*np.exp(c(u_))+6.233749044074204e-07*np.exp(2*c(u_))-1.25518026388014e-13*np.exp(3*c(u_))+1.2457970739369883e-20*np.exp(4*c(u_))'
     c_sign: 'lambda u_: np.sign(( uS - uI - w ))'
     alpha: 'lambda u_: c_sign(u_) * approximation(u_)'
     beta: 'lambda u_: beta_max/(1+np.exp(-alpha(u_)))'
@@ -40,12 +43,15 @@ CONDITIONS:
         - '- (d/dt) S - beta(u_loc) * (( S * &I ) + ( &S * I )) '
         - '- (d/dt) I + beta(u_loc) * (( S * &I ) + ( &S * I )) - gamma * I '  
         - '- (d/dt) uS - ( beta(u_loc) * ( &I * ( - uS + uI ) + I * ( - &uS + &uI )))'
+        #- '- (d/dt) uS - ( beta(u_loc) * ( &I * ( - uS + uI ) + I * ( - &uS + &uI )))'
         - '- (d/dt) uI - ( -gamma * uI )'
+        - '(beta_max * ( uS - uI ) * &I  + beta_max * ( &uS - &uI - w ) * I ) / 2'
       right: 
         - '- beta(u_loc) * (( &S * &I ))'
         - 'beta(u_loc) * (( &S * &I ))'
         - 'alpha(u_loc)**2 - beta(u_loc) * ( &I * ( - &uS + &uI - w))'
         - 'cost_inf'
+        - 'beta_max * ( &uS - &uI ) * &I / 2 + alpha(u_loc)*(1+np.exp(-alpha(u_loc)))*(1+np.exp(alpha(u_loc)))'
       points: default
     
     border:
