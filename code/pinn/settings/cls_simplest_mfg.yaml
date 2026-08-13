@@ -27,12 +27,13 @@ CUSTOMS:
     approximation: 'lambda u_: -6.63320111e-01 + np.sqrt(c(u_)) *8.92654544e-01 - c(u_) * 6.99385982e-02 + c(u_)**2* 2.97831057e-04 - c(u_)**3 * 1.08549568e-06 + c(u_)**4*1.68015701e-09 +np.exp(-c(u_))*  3.66041065e-02 + np.exp(-2*c(u_))*  4.74148560e-01'
     c_sign: 'lambda u_: np.sign(( uS - uI - w ))'
     alpha: 'lambda u_: c_sign(u_) * approximation(u_)'
-    beta: 'lambda u_: beta_max/(1+np.exp(-alpha(u_)))'
+    beta: 'lambda u_: beta_max/(1+np.exp(alpha(u_)))'
     small: 0.00001
     border_weight: 1.
     
     border: 'lambda sol, x, variable_num, border_side: border_weight * int(abs(x[variable_num] - sol.area_lims[variable_num, border_side]) < 1e-8)'
-
+    
+    #correction: 'lambda x: x' # defined in the code
 
 CONDITIONS:
     pde:

@@ -60,18 +60,20 @@ def SInext(x,t):
     return res
 
 def generate_data():
-    return rk4(np.array([S0,I0]), SInext)
+    x = rk4(np.array([S0,I0]), SInext)    
+    S = x[:,0]
+    I = x[:,1]
+    psi_I = c/gamma * (1-np.exp(gamma*(t-T)))
+    psi_S = psi_I + w +2*u*(1+np.exp(-u))/beta(u)/I
+    return np.array([S,I,psi_S,psi_I])
 
-x = generate_data()
+x = generate_data()[:2].T
 x2 = rk4(np.array([S0,I0]), SInext,2*n)
 
 print(np.max(np.abs(x-x2[::2])))
 
 S = x[:,0]
 I = x[:,1]
-plt.plot(S)
-plt.plot(I)
-plt.show()
 
 psi_I = c/gamma * (1-np.exp(gamma*(t-T)))
 psi_S = psi_I + w +2*u*(1+np.exp(-u))/beta(u)/I
@@ -83,16 +85,22 @@ for i in range(1,n-1):
 dpsi_S[-1] = dpsi_S[-2]
 dpsi_S[0] = dpsi_S[1]
 
-plt.plot(psi_S)
-plt.plot(psi_I)
-plt.show()
+if __name__=='__main__':
+    plt.plot(S)
+    plt.plot(I)
+    plt.show()
 
-plt.plot(dpsi_S - 2*u*(1+np.exp(-u)) + u**2)
-plt.show()
+
+    plt.plot(psi_S)
+    plt.plot(psi_I)
+    plt.show()
+
+    plt.plot(dpsi_S - 2*u*(1+np.exp(-u)) + u**2)
+    plt.show()
 
 psi_eq_correction = dpsi_S - 2*u*(1+np.exp(-u)) + u**2
 
-def generate_correction()
+def generate_correction():
     return dpsi_S - 2*u*(1+np.exp(-u)) + u**2
 
 '''

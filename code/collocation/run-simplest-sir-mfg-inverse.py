@@ -10,14 +10,27 @@ import yaml
 import pickle as pkl
 from random import gauss as random
 
+from example import generate_data, generate_correction
+
 import matplotlib.pyplot as plt
 
-def eval_error(sol, sol_mes, A,b):
+h = 2/(50*2**10)
+
+def eval_error(sol, file_data, A,b):
     er = [0]*10
     for func in range(4):
-        for t in ts:
-            inc = sol.eval([t],[0],func) - sol_mes.eval([t],[0],func)
+        data = np.zeros((2, len(ts)))
+        for it, t in enumerate(ts):
+            data[0,it] = sol.eval([t],[0],func)
+            data[1,it] = file_data[func,int((t+1)/h)]
+            inc = sol.eval([t],[0],func) - file_data[func,int((t+1)/h)] #sol_mes.eval([t],[0],func)
             er[func] += np.abs(float(inc))#**2
+        #plt.plot(data[0,:])
+        #plt.plot(data[1,:])
+        #plt.show()
+        #plt.plot(data[0,:] - data[1,:])
+        #plt.show()
+   
     er[4] = abs(sol.eval([0.2],[0],func=4)-20)
         
     true_resudual = np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
@@ -32,11 +45,12 @@ def eval_error(sol, sol_mes, A,b):
     return er
 
 
-def eval_error_rel(sol, sol_mes, A,b):
+def eval_error_rel(sol, file_data, A,b):
     er = [0]*10
     for func in range(4):
         for t in ts:
-            inc = (sol.eval([t],[0],func) - sol_mes.eval([t],[0],func))/(np.abs(sol_mes.eval([t],[0],func)) + 1e-10)
+            val = file_data[func,int((t+1)/h)]
+            inc = (sol.eval([t],[0],func) - val)/(np.abs(val) + 1e-8)
             er[func] += abs(float(inc))**2
         er[func] = np.sqrt(er[func])
         er[4] = abs((sol.eval([0.1],[0],func=4) + sol.eval([0.5],[0],func=4) + sol.eval([0.99],[0],func=4))/3-20)/20
@@ -98,36 +112,57 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0.01, 0.05, 0.10, 0.20]
+noise_lvl_set = [0,0.01, 0.05, 0.10, 0.20]
 #nn_points = 4
-num_data_points_set = 50*2**np.array(range(0, 9))
+num_data_points_set = 8*2**np.array(range(0, 9))
 nn_points = len(num_data_points_set)
-n_samples = 15
+n_samples = 10
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
+
+file_data = generate_data()
+correction_data = generate_correction()
 
 for i_data, num_data_points in enumerate(num_data_points_set):
     for i_noise, noise_lvl in enumerate(noise_lvl_set):
         print(num_data_points, noise_lvl)
         for sample_i in range(n_samples):
-            settings_filename = "settings/simplest_mfg.yaml"
-            settings, sol_mes, iteration_dict = from_file(settings_filename)
-            with open('colloc_solution_coefs.pkl', 'rb') as in_file:
-                coefs = pkl.load(in_file)
+            #settings_filename = "settings/simplest_mfg.yaml"
+            #settings, sol_mes, iteration_dict = from_file(settings_filename)
+            #with open('colloc_solution_coefs.pkl', 'rb') as in_file:
+            #    coefs = pkl.load(in_file)
 
-            sol_mes.cells_coefs = coefs['coefs']
+            #sol_mes.cells_coefs = coefs['coefs']
+            
             settings_filename = "settings/simplest_mfg_inverse.yaml"
             with open(settings_filename, mode="r") as file:
                 settings = yaml.safe_load(file)
             
+            
+            
             fixed_noize = np.random.normal(0,noise_lvl,num_data_points)
             settings['CONDITIONS']['data']['points'] = np.array(np.linspace(-1,1,num_data_points).reshape(-1,1))#utils.f_collocation_points(settings['MODEL']['power']+1)
 
-            data = [(1+fixed_noize[int((x[0]-1e-10)*num_data_points)])*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True) for x in settings['CONDITIONS']['data']['points']]
+            #data = [(1+fixed_noize[int((x[0]-1e-10)*num_data_points)])*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True) for x in settings['CONDITIONS']['data']['points']]
+            I_data = file_data[1,::int(len(file_data[0])/num_data_points)]
+            
+            #print(settings['CONDITIONS']['data']['points'])
+            
+            data_arr = [(1+fixed_noize[i])*I_data[i] for i in range(len(I_data))]
+            
+            #data = [(1+fixed_noize[int((x[0]+1-1e-10)*num_data_points)])*I_data[int((x[0]+1-1e-10)*num_data_points)] for x in settings['CONDITIONS']['data']['points']]
             #print(data)
-            settings['CUSTOMS']['I_info'] = lambda x : data[int((x[0] + 1)/2*num_data_points)] #(1+fixed_noize[int(x[0]*num_data_points)]*noise_lvl)*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True)
+            settings['CUSTOMS']['I_info'] = 'lambda x : data_arr[int((x[0] + 1)/(2/num_data_points))]' 
+            settings['CUSTOMS']['correction'] = 'lambda x : correction_arr[int((x[0] + 1)/(2/num_data_points))]'
+            #(1+fixed_noize[int(x[0]*num_data_points)]*noise_lvl)*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True)
+            
+            settings['CUSTOMS']['data_arr'] = I_data
+            settings['CUSTOMS']['correction_arr'] = correction_data[::int(len(file_data[0])/num_data_points)]
+            settings['CUSTOMS']['num_data_points'] = num_data_points
             
             temp_settings = cp(settings)
             settings, iteration_dict = prepare_settings(settings)
+            
+
             sol = Solution(**eval_dict(settings['MODEL'], {'np':np}))
             sol.cells_coefs *= 0.0
             sol.cells_coefs += 0.2
@@ -156,18 +191,18 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 coef_change = np.max(np.abs(prev_coefs - sol.cells_coefs))
                 print(j,' | ', coef_change ,' | ')
                 
-                if coef_change<1e-6 or np.isnan(coef_change):
+                if coef_change<5e-8 or np.isnan(coef_change):
                     #print(sample_i, ' converged')                    
                     break
                 saved_coefs = sol.cells_coefs
             
-            errors = eval_error(sol, sol_mes, A, b)
+            errors = eval_error(sol, file_data, A, b)
             all_errors[j] = errors
             
-            rel_errors = eval_error_rel(sol, sol_mes, A, b)
+            rel_errors = eval_error_rel(sol, file_data, A, b)
             all_rel_errors[j] = rel_errors
             
-            print(rel_errors[4])
+            print('beta_err: ', rel_errors[4], errors[4])
             
             final_errors[i_data,i_noise,sample_i] = errors[4]
             
@@ -176,7 +211,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             if np.any(np.isnan(sol.cells_coefs  )):
                 sol.cells_coefs = np.zeros((sol.cells_coefs.shape))
                 print('failed')
-            for er in rel_errors:
+            for er in errors:
                 out_string += ',' + str(er)
             out_string +='\n'
             with open('result.csv', 'a') as f:

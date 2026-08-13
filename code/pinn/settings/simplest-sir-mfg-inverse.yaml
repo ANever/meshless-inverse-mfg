@@ -34,19 +34,21 @@ VARIABLES:
 
 CUSTOM_FUNCS:
   #exact: t*0
-  beta: 1 /(1.+tf.exp(-alpha(vars_,u_)))
+  beta: 1 /(1.+tf.exp(alpha(vars_,u_)))
   c: tf.math.abs( beta_max *( uS - uI -  w ) * tf.stop_gradient( I ) / 2. ) + 1e-13
   c_sign: tf.math.sign(( uS - uI - w ))
   approximation: -6.63320111e-01 + tf.math.sqrt(c(vars_,u_)) *8.92654544e-01 - c(vars_,u_) * 6.99385982e-02 + c(vars_,u_)**2* 2.97831057e-04 - c(vars_,u_)**3 * 1.08549568e-06 + c(vars_,u_)**4*1.68015701e-09 +tf.math.exp(-c(vars_,u_))*  3.66041065e-02 + tf.math.exp(-2*c(vars_,u_))*  4.74148560e-01
   # this is an approximation of inverse function for f(x)=x(2+e^x+e^(-x))
   alpha: c_sign(vars_,u_) * approximation(vars_,u_)
+  #correction: '0' #definded in run-script
   
 CONDS:
   pde:
     eq_string: '  (d/dt) S  = - beta(vars,u_) * beta_max * S * tf.stop_gradient( I ),
                   (d/dt) I  = beta(vars,u_) * beta_max * S * tf.stop_gradient( I ) - gamma * I ,
-                - (d/dt) uS = - beta(vars,u_) * beta_max * tf.stop_gradient( I ) * ( uS - uI - w) + alpha(vars,u_)**2,
                 - (d/dt) uI = - gamma * uI + cost_inf'
+                #- (d/dt) uS = - beta(vars,u_) * beta_max * tf.stop_gradient( I ) * ( uS - uI - w) + alpha(vars,u_)**2 - correction(vars,u_),
+                
     relative_area: True
     point_area: '[[0, 1]]'
     N: 250 #5000
@@ -67,4 +69,10 @@ CONDS:
      raw_data_condition: True
      eq_string: I *10
      weight: 10
-     filename: colloc_solution_I.pkl
+     filename: 'raw_data/I_data.pkl'
+  
+  corrected:
+    raw_data_condition: True
+    eq_string: '(d/dt) uS - beta(vars,u_) * beta_max * tf.stop_gradient( I ) * ( uS - uI - w) + alpha(vars,u_)**2'
+    weight: 1
+    filename: 'raw_data/psi_S_correction.pkl'

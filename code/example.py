@@ -62,6 +62,7 @@ def SInext(x,t):
 def generate_data():
     return rk4(np.array([S0,I0]), SInext)
 
+
 x = generate_data()
 x2 = rk4(np.array([S0,I0]), SInext,2*n)
 

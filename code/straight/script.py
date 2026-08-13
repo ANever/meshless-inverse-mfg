@@ -4,6 +4,8 @@ from clspde.prepare import from_file, prepare_settings
 from clspde.solution import Solution
 import pickle as pkl
 import pandas as pd
+from example import generate_correction, generate_data
+
 
 #Loading high-accuracy solution for the forward porblem
 settings_filename = "simplest_mfg.yaml"
@@ -23,9 +25,15 @@ c = 4
 S0 = 0.7
 I0 = 1-S0
 
+h_small = 2/(50*2**10)
+
 n_samples = 100
 nn_steps = 10
 experiments_results = np.zeros((nn_steps, len(noise_levels), n_samples))
+
+
+file_data = generate_data()
+correction_data = generate_correction()
 
 #run the algorithm
 number_of_steps = [50*2**i for i in range(nn_steps)]
@@ -38,6 +46,9 @@ for n_i, n in enumerate(number_of_steps):
     
     h = T/n
     
+    I_data = file_data[1,::int(len(file_data[0])/n)]
+    correction = correction_data[::int(len(file_data[0])/n)]
+
     print(n, '--------')
     for noise_i, noise in enumerate(noise_levels):
         print(noise)
@@ -45,9 +56,9 @@ for n_i, n in enumerate(number_of_steps):
             for i in range(n):
                 point = np.array([i*h - 1])
                 pI[i] = (1-np.exp(gamma*(i*h-T)))*c/gamma
-                I[i] = sol_mes.eval(point,[0],func=1) 
-                dIdt[i] = sol_mes.eval(point,[1],func=1) 
-            
+                I[i] = I_data[i]
+                dIdt[i] = (-file_data[1,i*int(len(file_data[0])/n)] + file_data[1,1+i*int(len(file_data[0])/n)])/h_small
+            dIdt[0] = dIdt[1]
             for i in range(n):#(n-1):
                 I[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
                 dIdt[i] *= (1+np.random.normal(loc=0.0, scale=noise, size=None))
@@ -64,8 +75,8 @@ for n_i, n in enumerate(number_of_steps):
                 #for i in range(1,n):
                 #    INT[-i-1] = INT[-i] + h * f[-i]
                 #return beta * I / 2 / (1+np.exp(-u)) * (INT - pI - w)
-                return beta[-1] * I[-1] / 2 / (1+np.exp(-u)) * ( - w)
-            
+                return (- w) * beta[-1] * I[-1] / 2 / (1+np.exp(u))
+
             u = 0
             change = 0.9
             for i in range(int(1e6)):
@@ -75,6 +86,7 @@ for n_i, n in enumerate(number_of_steps):
                 u = u*(1-change) + _u*(change)
 
             beta_max = beta[-1] * (1+np.exp(u))
+            print(beta_max)
             experiments_results[n_i, noise_i, sample_i] = abs(beta_max - 20)#[-1]
 
 #output results into files
