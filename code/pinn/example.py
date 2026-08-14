@@ -85,11 +85,17 @@ for i in range(1,n-1):
 dpsi_S[-1] = dpsi_S[-2]
 dpsi_S[0] = dpsi_S[1]
 
+psi_eq_correction = dpsi_S - 2*u*(1+np.exp(-u)) + u**2
+
+def generate_correction():
+    return ( dpsi_S - I * beta(u) * (psi_S - psi_I - w) + u**2 )
+    #dpsi_S - 2*u*(1+np.exp(-u)) + u**2
+
+
 if __name__=='__main__':
     plt.plot(S)
     plt.plot(I)
     plt.show()
-
 
     plt.plot(psi_S)
     plt.plot(psi_I)
@@ -98,11 +104,10 @@ if __name__=='__main__':
     plt.plot(dpsi_S - 2*u*(1+np.exp(-u)) + u**2)
     plt.show()
 
-psi_eq_correction = dpsi_S - 2*u*(1+np.exp(-u)) + u**2
 
-def generate_correction():
-    return dpsi_S - 2*u*(1+np.exp(-u)) + u**2
-
+#plt.plot(psi_eq_correction - generate_correction())
+#plt.plot(generate_correction())
+#plt.show()
 '''
 S = np.array(S0*np.exp(-beta_max*cI*t))
 I = S0*beta_max*cI/(beta_max*cI-gamma) * (-np.exp(-beta_max*cI*t) + np.exp(-gamma*t)) + I0*np.exp(-gamma*t)

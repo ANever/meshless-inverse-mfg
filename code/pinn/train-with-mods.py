@@ -13,6 +13,7 @@ import pickle as pkl
 import tensorflow as tf
 problem_name = 'simplest-sir-mfg-inverse'#'sir-controlled' #'simplest-sir-mfg'
 
+import matplotlib.pyplot as plt
 from example import generate_data, generate_correction
 
 noise = [0.01, 0.05, 0.1, 0.2]
@@ -22,11 +23,15 @@ n = len(noise)
 def eval_errors(sol, model):
     n = 200
     points = np.linspace(-1,1-(1e-10),n).reshape((n,1))
+    
+    data_all = generate_data()
+    
     total_err = np.zeros(5)
     for i in range(4):
         err = 0
         for p_i in points:
-            data = sol.eval(p_i, [0], func=i)
+            data = data_all[i, int((p_i[0]+1)*2/len(data_all[0]))]
+            #data = sol.eval(p_i, [0], func=i)
             err += ((data - model(tf.constant([p_i]))[0][i])**2/(data+1e-7)**2)
         total_err[i] = np.sqrt(err)/n
     total_err[-1] = np.sqrt((20 - model(tf.constant([p_i]))[0][-1])**2)/20
@@ -47,20 +52,22 @@ if __name__ == "__main__":
     data = generate_data()[1]
     correction_data = generate_correction()
     
-    for i in 50*np.array([2**i for i in range(1,10)]):
+    n = 1600 #50*2**4
+    x_correction = np.linspace(-1,1-(1e-10),n).reshape((n,1))
+    correction = np.array(data[::int(len(correction_data)/n)]).reshape((n,1))
+    out_dict = {'points':x_correction, 'data':correction}
+    with open('raw_data/psi_S_correction.pkl', mode="wb") as file:
+        pkl.dump(out_dict, file)
+    
+    
+    for i in 50*np.array([2**i for i in range(2,10)]):
         #noiseless_filename = 'raw_data/colloc_solution_I_'+str(i)+'.pkl'
         #with open(noiseless_filename, mode="rb") as datafile:
         #    data = pkl.load(datafile)
         x = np.linspace(-1,1-(1e-10),i).reshape((i,1))
         print(x.shape)
-        c = x*0
+        #c = x*0
         c = np.array(data[::int(len(data)/i)]).reshape((i,1))
-        n = 50*2**4
-        x_correction = np.linspace(-1,1-(1e-10),n).reshape((n,1))
-        correction = np.array(data[::int(len(correction_data)/n)]).reshape((n,1))
-        out_dict = {'points':x_correction, 'data':correction}
-        with open('raw_data/psi_S_correction.pkl', mode="wb") as file:
-            pkl.dump(out_dict, file)
                     
         
         #for ii in range(i):
@@ -85,8 +92,6 @@ if __name__ == "__main__":
                         settings = yaml.safe_load(file)
                     #data_filename = 'raw_data/colloc_solution_I_'+str(i)+'_'+str(j)+'.pkl'
                     #data_filename = 'raw_data/I_data'+str(i)+'_'+str(j)+'.pkl'
-                    
-                    
                     #c = np.array(data['data'])
                     
                     c_new = c * (1 + np.random.normal(0,noise[j],c.shape))
