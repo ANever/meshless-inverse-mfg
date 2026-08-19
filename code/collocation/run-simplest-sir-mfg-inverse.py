@@ -112,11 +112,11 @@ def eval_residuals(sol,raw_res, name, i):
     )
     return np.sqrt(np.sum((A @ raw_res - b)**2))/len(b)
 
-noise_lvl_set = [0,0.01, 0.05, 0.10, 0.20]
+noise_lvl_set = [0.0,0.01, 0.05, 0.10, 0.20]
 #nn_points = 4
-num_data_points_set = 8*2**np.array(range(0, 9))
+num_data_points_set = 50*2**np.array(range(0, 9))
 nn_points = len(num_data_points_set)
-n_samples = 10
+n_samples = 5  
 final_errors = np.zeros((nn_points, len(noise_lvl_set), n_samples))
 
 file_data = generate_data()
@@ -146,16 +146,14 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             I_data = file_data[1,::int(len(file_data[0])/num_data_points)]
             
             #print(settings['CONDITIONS']['data']['points'])
-            
-            data_arr = [(1+fixed_noize[i])*I_data[i] for i in range(len(I_data))]
-            
+            data_arr = np.array([(1+fixed_noize[i])*I_data[i] for i in range(len(I_data))])
             #data = [(1+fixed_noize[int((x[0]+1-1e-10)*num_data_points)])*I_data[int((x[0]+1-1e-10)*num_data_points)] for x in settings['CONDITIONS']['data']['points']]
             #print(data)
             settings['CUSTOMS']['I_info'] = 'lambda x : data_arr[int((x[0] + 1)/(2/num_data_points))]' 
             settings['CUSTOMS']['correction'] = 'lambda x : correction_arr[int((x[0] + 1)/(2/num_data_points))]'
             #(1+fixed_noize[int(x[0]*num_data_points)]*noise_lvl)*sol_mes.eval(point=x, der=[0], func=1, cells_closed_right=True)
             
-            settings['CUSTOMS']['data_arr'] = I_data
+            settings['CUSTOMS']['data_arr'] = data_arr
             settings['CUSTOMS']['correction_arr'] = correction_data[::int(len(file_data[0])/num_data_points)]
             settings['CUSTOMS']['num_data_points'] = num_data_points
             
@@ -191,7 +189,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
                 coef_change = np.max(np.abs(prev_coefs - sol.cells_coefs))
                 print(j,' | ', coef_change ,' | ')
                 
-                if coef_change<5e-8 or np.isnan(coef_change):
+                if coef_change<1.5e-3 or np.isnan(coef_change):
                     #print(sample_i, ' converged')                    
                     break
                 saved_coefs = sol.cells_coefs
@@ -211,7 +209,7 @@ for i_data, num_data_points in enumerate(num_data_points_set):
             if np.any(np.isnan(sol.cells_coefs  )):
                 sol.cells_coefs = np.zeros((sol.cells_coefs.shape))
                 print('failed')
-            for er in errors:
+            for er in rel_errors:
                 out_string += ',' + str(er)
             out_string +='\n'
             with open('result.csv', 'a') as f:

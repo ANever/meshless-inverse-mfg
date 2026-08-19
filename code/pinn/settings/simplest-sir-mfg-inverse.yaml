@@ -1,7 +1,7 @@
 ARGS:
   epochs: 300000
   batch_size: -1
-  patience: 4000
+  patience: 1000
 
 MODEL:
   f_hid: 25

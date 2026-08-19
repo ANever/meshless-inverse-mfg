@@ -52,15 +52,15 @@ if __name__ == "__main__":
     data = generate_data()[1]
     correction_data = generate_correction()
     
-    n = 1600 #50*2**4
-    x_correction = np.linspace(-1,1-(1e-10),n).reshape((n,1))
-    correction = np.array(data[::int(len(correction_data)/n)]).reshape((n,1))
+    n2 = 1600 #50*2**4
+    x_correction = np.linspace(-1,1-(1e-10),n2).reshape((n2,1))
+    correction = np.array(data[::int(len(correction_data)/n2)]).reshape((n2,1))
     out_dict = {'points':x_correction, 'data':correction}
     with open('raw_data/psi_S_correction.pkl', mode="wb") as file:
         pkl.dump(out_dict, file)
     
     
-    for i in 50*np.array([2**i for i in range(2,10)]):
+    for i in 50*np.array([2**i for i in range(3,10)]):
         #noiseless_filename = 'raw_data/colloc_solution_I_'+str(i)+'.pkl'
         #with open(noiseless_filename, mode="rb") as datafile:
         #    data = pkl.load(datafile)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                 #    pkl.dump(out_dict, file)
                 model = sp.from_settings(settings, 
                                 model_class=sp.PINN_WAVE)
-                for iteration in range(3):
+                for iteration in range(1):
                     with open(filename, mode="r") as file:
                         settings = yaml.safe_load(file)
                     #data_filename = 'raw_data/colloc_solution_I_'+str(i)+'_'+str(j)+'.pkl'

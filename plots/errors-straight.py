@@ -25,7 +25,7 @@ def make_single_plot(doc, data_filename, ylabel=''):
     
     \def\file{data-errors''' + data_filename +r'''}
     
-    \addplot+                  table [x=x, y=0, col sep=comma] {\file};
+    \addplot+                  table [x=x, y=0.0, col sep=comma] {\file};
     \addplot+ [color=black!90] table [x=x, y=0.01, col sep=comma] {\file};
     \addplot+ [color=black!80] table [x=x, y=0.05, col sep=comma] {\file};
     \addplot+ [color=black!70] table [x=x, y=0.1, col sep=comma] {\file};
@@ -69,7 +69,7 @@ import pandas as pd
 import subprocess
 tex_filename = 'basic.tex'
 #
-for data_filename_prefix in  ['-straight/', '-straight-last/', '-pinn/', '-colloc/']:
+for data_filename_prefix in  ['-straight-last/', '-pinn/', '-colloc/']:#'-straight/', 
 
     data_filename = 'rel_means.csv'
 
@@ -83,8 +83,10 @@ for data_filename_prefix in  ['-straight/', '-straight-last/', '-pinn/', '-collo
             make_ending(doc)
         subprocess.run(r"pdflatex --output-directory=results tex/"+ tex_filename, shell=True)
         res_name = data_filename_prefix[:-1]+data_filename[-9:-3]
-        subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
-        subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
+        #subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
+        #subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
+        subprocess.run(r"rm results/errors" + res_name +"pdf", shell=True)
+        subprocess.run(r"mv results/basic.pdf results/errors" + res_name +"pdf", shell=True)
         
 
     data_filename = 'rel_stds.csv'
@@ -100,5 +102,8 @@ for data_filename_prefix in  ['-straight/', '-straight-last/', '-pinn/', '-collo
         subprocess.run(r"pdflatex --output-directory=results tex/"+ tex_filename, shell=True)
         res_name = data_filename_prefix[:-1]+data_filename[-9:-3]
         
-        subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
-        subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
+        #subprocess.run(r"del results\\errors" + res_name +"pdf", shell=True)
+        #subprocess.run(r"rename results\\basic.pdf errors" + res_name +"pdf", shell=True)
+        subprocess.run(r"rm results/errors" + res_name +"pdf", shell=True)
+        subprocess.run(r"mv results/basic.pdf results/errors" + res_name +"pdf", shell=True)
+        
